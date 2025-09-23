@@ -2,6 +2,26 @@
 
 A simple web-based chatbot that helps Operations Leads quickly forecast production capacity for their teams.
 
+## Screenshots
+
+### Desktop Interface
+![Desktop View](screenshots/09-desktop-view.png)
+*Full desktop experience with 4-column metrics layout and comprehensive dashboard*
+
+### Mobile Interface
+![Mobile View](screenshots/08-mobile-view.png)
+*Responsive mobile design optimized for touch interaction*
+
+### Key App Screens
+
+| Landing Page |
+|:---:|
+| ![Landing](screenshots/01-landing-page.png) |
+
+| Follow-up Scenarios |
+|:---:|
+| ![Scenarios](screenshots/07-follow-up-scenarios.png) |
+
 ## Features
 
 - **Natural Language Input**: Ask questions like "What's my capacity for October?" or "How much can we deliver next month?"
@@ -151,6 +171,41 @@ The chatbot includes optional AI enhancements powered by Google Gemini API:
 - ✅ Your forecast data is only processed for generating insights
 - ⚠️ Keep your API key private and rotate it regularly
 - ⚠️ Don't share your API key with others or include it in screenshots
+
+## Development & Testing
+
+### Testing with Playwright
+
+The app includes comprehensive end-to-end tests using Playwright:
+
+```bash
+# Run all tests
+npm test
+
+# Run tests with visible browser
+npm run test:headed
+
+# Interactive test UI
+npm run test:ui
+
+# Generate test report
+npm run test:report
+```
+
+**Test Coverage:**
+- ✅ UI functionality across Chromium, Firefox, and WebKit
+- ✅ Complete capacity forecasting workflow
+- ✅ Interactive features (toggles, follow-up questions)
+- ✅ Responsive design validation
+- ✅ Cross-browser compatibility
+
+### Screenshot Generation
+
+Screenshots for documentation are automatically generated using Playwright:
+
+```bash
+npx playwright test tests/screenshots.spec.js
+```
 
 ## Browser Compatibility
 

@@ -1,0 +1,28 @@
+{
+  "name": "capacity_forecast",
+  "version": "1.0.0",
+  "description": "A simple web-based chatbot that helps Operations Leads quickly forecast production capacity for their teams.",
+  "main": "env-loader.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:report": "playwright show-report",
+    "serve": "python3 -m http.server 8080"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/steamed-egg/capacity_calculator.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/steamed-egg/capacity_calculator/issues"
+  },
+  "homepage": "https://github.com/steamed-egg/capacity_calculator#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.55.1"
+  }
+}
