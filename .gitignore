@@ -28,12 +28,17 @@ logs
 *.tmp
 *.temp
 
-# Environment variables
+# Environment variables (CRITICAL: Never commit API keys!)
 .env
+.env.*
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Config files with secrets
+config.local.js
+*secrets*
 
 # Build outputs
 dist/

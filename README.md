@@ -112,6 +112,46 @@ http://localhost:8080/test.html
 - `test.html` - Automated tests
 - `README.md` - This documentation
 
+## AI-Powered Features (Optional)
+
+The chatbot includes optional AI enhancements powered by Google Gemini API:
+
+### Setting Up AI Features
+
+1. **Get a Google Gemini API Key**:
+   - Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
+   - Create a new API key for the Gemini model
+   - Keep your API key secure and never share it publicly
+
+2. **Configure the API Key**:
+   - In the chat interface, type: `set api key YOUR_API_KEY_HERE`
+   - The key is stored securely in your browser's localStorage
+   - The key never leaves your browser or gets transmitted to our servers
+
+3. **AI Features Include**:
+   - **Smart Insights**: AI-generated analysis of your capacity forecasts
+   - **Optimization Recommendations**: Intelligent suggestions for improving capacity
+   - **Advanced Query Handling**: Ask complex questions about your forecasts
+   - **Industry Benchmarking**: AI-powered comparisons with best practices
+
+### Example AI Queries
+
+```
+"How does this compare to industry standards?"
+"What are the risks with this capacity plan?"
+"Give me optimization recommendations"
+"How can I improve team efficiency?"
+```
+
+### Security & Privacy
+
+- ✅ API keys are stored locally in your browser only
+- ✅ No API keys are hardcoded or transmitted to our servers
+- ✅ All AI queries are sent directly to Google's Gemini API
+- ✅ Your forecast data is only processed for generating insights
+- ⚠️ Keep your API key private and rotate it regularly
+- ⚠️ Don't share your API key with others or include it in screenshots
+
 ## Browser Compatibility
 
 Works in all modern browsers (Chrome, Firefox, Safari, Edge)
