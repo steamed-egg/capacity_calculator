@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Capacity Forecast Bot Test</title>
+</head>
+<body>
+    <div id="test-results"></div>
+
+    <script>
+        class TestCapacityBot {
+            constructor() {
+                this.results = [];
+            }
+
+            test(name, actual, expected) {
+                const passed = JSON.stringify(actual) === JSON.stringify(expected);
+                this.results.push({ name, passed, actual, expected });
+                console.log(`${passed ? '✓' : '✗'} ${name}: ${passed ? 'PASS' : 'FAIL'}`);
+                if (!passed) {
+                    console.log(`  Expected: ${JSON.stringify(expected)}`);
+                    console.log(`  Actual: ${JSON.stringify(actual)}`);
+                }
+            }
+
+            extractTimeWindow(message) {
+                const timePatterns = [
+                    /\b(january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d{4})\b/i,
+                    /\b(next|this)\s+(month|quarter|year)\b/i,
+                    /\bq[1-4]\s+(\d{4})\b/i,
+                    /\b(\d{1,2})\/(\d{4})\b/,
+                    /\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s+(\d{4})\b/i
+                ];
+
+                for (const pattern of timePatterns) {
+                    const match = message.match(pattern);
+                    if (match) {
+                        return match[0];
+                    }
+                }
+                return null;
+            }
+
+            extractNumber(message, keywords) {
+                for (const keyword of keywords) {
+                    const pattern = new RegExp(`(\\d+)\\s*${keyword}`, 'i');
+                    const match = message.match(pattern);
+                    if (match) {
+                        return parseInt(match[1]);
+                    }
+                }
+                return null;
+            }
+
+            extractPercentage(message) {
+                const percentMatch = message.match(/(\d+)%/);
+                if (percentMatch) {
+                    return parseInt(percentMatch[1]) / 100;
+                }
+
+                const ratioMatch = message.match(/0\.(\d+)/);
+                if (ratioMatch) {
+                    return parseFloat(`0.${ratioMatch[1]}`);
+                }
+
+                return null;
+            }
+
+            getWorkingDaysInMonth(year, month) {
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                let workingDays = 0;
+
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const date = new Date(year, month, day);
+                    const dayOfWeek = date.getDay();
+                    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+                        workingDays++;
+                    }
+                }
+
+                return workingDays;
+            }
+
+            runTests() {
+                console.log('Running Capacity Forecast Bot Tests...\n');
+
+                // Test time window extraction
+                this.test('Extract month and year',
+                    this.extractTimeWindow('What is capacity for October 2025?'),
+                    'October 2025');
+
+                this.test('Extract next month',
+                    this.extractTimeWindow('What about next month?'),
+                    'next month');
+
+                this.test('Extract quarter',
+                    this.extractTimeWindow('Show me Q1 2026'),
+                    'Q1 2026');
+
+                // Test number extraction
+                this.test('Extract staff count',
+                    this.extractNumber('We have 15 staff members', ['staff', 'people', 'team', 'members']),
+                    15);
+
+                this.test('Extract implementation time',
+                    this.extractNumber('Average is 3 hours per task', ['hours', 'hour', 'implementation', 'time']),
+                    3);
+
+                // Test percentage extraction
+                this.test('Extract percentage',
+                    this.extractPercentage('We expect 85% availability'),
+                    0.85);
+
+                this.test('Extract decimal ratio',
+                    this.extractPercentage('Availability is 0.8'),
+                    0.8);
+
+                // Test working days calculation
+                this.test('Working days in October 2025',
+                    this.getWorkingDaysInMonth(2025, 9), // October is month 9 (0-indexed)
+                    23);
+
+                // Summary
+                const passed = this.results.filter(r => r.passed).length;
+                const total = this.results.length;
+
+                console.log(`\nTest Summary: ${passed}/${total} tests passed`);
+
+                if (passed === total) {
+                    console.log('🎉 All tests passed!');
+                } else {
+                    console.log('❌ Some tests failed - check the details above');
+                }
+
+                return passed === total;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const tester = new TestCapacityBot();
+            const allPassed = tester.runTests();
+
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = `
+                <h2>Test Results</h2>
+                <p>Status: ${allPassed ? '✅ All tests passed!' : '❌ Some tests failed'}</p>
+                <p>Check the browser console for detailed results.</p>
+            `;
+        });
+    </script>
+</body>
+</html>

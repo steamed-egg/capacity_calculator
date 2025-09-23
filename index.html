@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capacity Forecast Chatbot</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Capacity Forecast Chatbot</h1>
+            <p>Get quick capacity forecasts for your operations team</p>
+        </header>
+
+        <div class="chat-container">
+            <div id="chat-messages" class="chat-messages">
+                <div class="message bot-message">
+                    <div class="message-content">
+                        Hi! I can help you forecast your team's capacity. Just ask me something like "What's my capacity for October?" or "How much can we deliver next month?"
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-input-container">
+                <input type="text" id="chat-input" placeholder="Ask about your capacity forecast..." />
+                <button id="send-button">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PDF Generation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
