@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PDF Test</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <button onclick="testPDF()" style="margin: 20px; padding: 10px;">Test PDF Generation</button>
+
+        <!-- Sample dashboard for testing -->
+        <div class="capacity-dashboard">
+            <div class="dashboard-header">
+                <div class="dashboard-title">Test Capacity Forecast</div>
+                <div class="time-period">Test Period</div>
+            </div>
+
+            <div class="capacity-result">
+                <div class="capacity-number">25</div>
+                <div class="capacity-label">New Implementation Tasks</div>
+            </div>
+
+            <div class="dashboard-metrics">
+                <div class="metrics-row-top">
+                    <div class="metric-card">
+                        <div class="metric-value">5</div>
+                        <div class="metric-label">Team Members</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">22</div>
+                        <div class="metric-label">Working Days</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">80%</div>
+                        <div class="metric-label">Availability</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">704h</div>
+                        <div class="metric-label">Available Hours</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="calculation-breakdown">
+                <div class="calculation-header">
+                    <div class="calculation-title">📊 Calculation Breakdown</div>
+                </div>
+                <div class="calculation-content" id="calculationContent">
+                    <div class="calculation-step">
+                        <span>Working Days in Period</span>
+                        <span>22 days</span>
+                    </div>
+                    <div class="calculation-step">
+                        <span>Total Available Hours</span>
+                        <span>22 × 8 × 5 = 880h</span>
+                    </div>
+                    <div class="calculation-step">
+                        <span>Effective Working Hours</span>
+                        <span>880 × 80% = 704h</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="script.js"></script>
+
+    <script>
+        function testPDF() {
+            console.log('Testing PDF generation...');
+            capacityBot.downloadPDF();
+        }
+    </script>
+</body>
+</html>

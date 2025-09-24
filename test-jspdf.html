@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>jsPDF Test</title>
+</head>
+<body>
+    <h1>jsPDF Library Test</h1>
+    <button onclick="testJsPDF()">Test jsPDF</button>
+    <div id="output"></div>
+
+    <!-- Load jsPDF same way as main app -->
+    <script src="jspdf.min.js"></script>
+    <script>
+        function log(message) {
+            document.getElementById('output').innerHTML += '<p>' + message + '</p>';
+            console.log(message);
+        }
+
+        window.addEventListener('load', () => {
+            log('=== jsPDF Loading Test ===');
+            log('typeof window.jsPDF: ' + typeof window.jsPDF);
+            log('typeof jsPDF: ' + (typeof jsPDF !== 'undefined' ? typeof jsPDF : 'undefined'));
+            log('window.jsPDF: ' + window.jsPDF);
+
+            // Check all jsPDF related properties
+            const jsPDFProps = Object.keys(window).filter(key =>
+                key.toLowerCase().includes('jspdf') || key.toLowerCase().includes('pdf')
+            );
+            log('jsPDF-related window properties: ' + JSON.stringify(jsPDFProps));
+
+            // Try to access the constructor
+            if (window.jsPDF) {
+                log('window.jsPDF type: ' + typeof window.jsPDF);
+                log('window.jsPDF.jsPDF: ' + (window.jsPDF.jsPDF ? typeof window.jsPDF.jsPDF : 'undefined'));
+            }
+
+            // Check lowercase jspdf
+            if (window.jspdf) {
+                log('window.jspdf type: ' + typeof window.jspdf);
+                log('window.jspdf.jsPDF: ' + (window.jspdf.jsPDF ? typeof window.jspdf.jsPDF : 'undefined'));
+
+                // Test both possibilities
+                if (typeof window.jspdf === 'function') {
+                    log('window.jspdf appears to be a constructor function');
+                } else if (window.jspdf.jsPDF && typeof window.jspdf.jsPDF === 'function') {
+                    log('window.jspdf.jsPDF appears to be the constructor');
+                }
+            }
+        });
+
+        function testJsPDF() {
+            try {
+                log('\\n=== Testing jsPDF Constructor ===');
+
+                // Test window.jspdf directly
+                if (window.jspdf) {
+                    log('Testing window.jspdf constructor...');
+
+                    if (typeof window.jspdf === 'function') {
+                        log('Trying: new window.jspdf()...');
+                        const pdf1 = new window.jspdf();
+                        log('✅ new window.jspdf() worked!');
+                        return;
+                    } else if (window.jspdf.jsPDF && typeof window.jspdf.jsPDF === 'function') {
+                        log('Trying: new window.jspdf.jsPDF()...');
+                        const pdf2 = new window.jspdf.jsPDF();
+                        log('✅ new window.jspdf.jsPDF() worked!');
+                        return;
+                    }
+                }
+
+                if (typeof window.jsPDF === 'undefined') {
+                    log('❌ window.jsPDF is undefined');
+                    return;
+                }
+
+                log('Trying: new window.jsPDF()...');
+                const pdf3 = new window.jsPDF();
+                log('✅ new window.jsPDF() worked!');
+
+            } catch (error) {
+                log('❌ Constructor test failed: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

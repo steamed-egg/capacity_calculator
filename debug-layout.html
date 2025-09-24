@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Layout</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Debug styles */
+        .metrics-row-top {
+            border: 2px solid red !important;
+            background: yellow !important;
+        }
+        .metric-card {
+            border: 1px solid blue !important;
+            background: lightblue !important;
+        }
+        .debug-info {
+            background: #f0f0f0;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Debug: 4-Column Layout Test</h1>
+
+        <div class="debug-info">
+            <strong>Expected:</strong> 4 metric cards in a single row<br>
+            <strong>CSS Rule:</strong> .metrics-row-top { grid-template-columns: repeat(4, 1fr) !important; }
+        </div>
+
+        <!-- Test the exact structure from your app -->
+        <div class="capacity-dashboard">
+            <div class="dashboard-metrics">
+                <div class="metrics-row-top">
+                    <div class="metric-card">
+                        <div class="metric-value">25</div>
+                        <div class="metric-label">Team Members</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">22</div>
+                        <div class="metric-label">Working Days</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">85%</div>
+                        <div class="metric-label">Availability</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">3740h</div>
+                        <div class="metric-label">Available Hours</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="debug-info">
+            <strong>If you see 4 cards in one row with yellow background:</strong> CSS is working<br>
+            <strong>If you see cards stacked or in separate rows:</strong> CSS issue
+        </div>
+
+        <script>
+            // Debug the actual computed styles
+            window.addEventListener('load', () => {
+                const metricsRow = document.querySelector('.metrics-row-top');
+                const computedStyle = window.getComputedStyle(metricsRow);
+
+                console.log('=== DEBUG INFO ===');
+                console.log('Grid template columns:', computedStyle.gridTemplateColumns);
+                console.log('Display:', computedStyle.display);
+                console.log('Gap:', computedStyle.gap);
+                console.log('Width:', computedStyle.width);
+                console.log('Number of metric cards:', document.querySelectorAll('.metric-card').length);
+
+                // Show in page
+                const debugDiv = document.createElement('div');
+                debugDiv.className = 'debug-info';
+                debugDiv.innerHTML = `
+                    <strong>Computed Styles:</strong><br>
+                    Display: ${computedStyle.display}<br>
+                    Grid Template Columns: ${computedStyle.gridTemplateColumns}<br>
+                    Gap: ${computedStyle.gap}<br>
+                    Width: ${computedStyle.width}<br>
+                    Metric Cards Count: ${document.querySelectorAll('.metric-card').length}
+                `;
+                document.body.appendChild(debugDiv);
+            });
+        </script>
+    </div>
+</body>
+</html>
