@@ -1,212 +1,199 @@
-# Capacity Forecast Chatbot MVP
+# Capacity Forecast Chatbot
 
-A simple web-based chatbot that helps Operations Leads quickly forecast production capacity for their teams.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-yellow.svg)](https://www.javascript.com/)
+[![CSS3](https://img.shields.io/badge/CSS3-1572B6?logo=css3&logoColor=white)](https://www.w3.org/Style/CSS/)
 
-## Screenshots
+A smart web-based chatbot that helps Operations Leads quickly forecast production capacity for their teams using natural language conversations.
 
-### Desktop Interface
-![Desktop View](screenshots/09-desktop-view.png)
-*Full desktop experience with 4-column metrics layout and comprehensive dashboard*
-
-### Mobile Interface
-![Mobile View](screenshots/08-mobile-view.png)
-*Responsive mobile design optimized for touch interaction*
-
-### Key App Screens
-
-| Landing Page |
-|:---:|
-| ![Landing](screenshots/01-landing-page.png) |
-
-| Follow-up Scenarios |
-|:---:|
-| ![Scenarios](screenshots/07-follow-up-scenarios.png) |
+![Landing Page](screenshots/01-landing.png)
 
 ## Features
 
-- **Natural Language Input**: Ask questions like "What's my capacity for October?" or "How much can we deliver next month?"
-- **Smart Input Collection**: Automatically extracts information from your questions or prompts for missing details
-- **Working Days Calculation**: Automatically excludes weekends and calculates based on 8-hour workdays
-- **Visual Dashboard Results**: Interactive dashboard with metrics, efficiency gauge, and calculation breakdown
-- **Reset Functionality**: Calculate multiple scenarios with easy reset button
-- **PDF Export**: Download professional PDF reports of capacity forecasts
-- **Responsive Design**: Works seamlessly on desktop and mobile devices
+- 🤖 **Natural Language Interface** - Ask questions like "What's my capacity for October?"
+- 📊 **Visual Dashboard** - Interactive results with 4-column metrics layout
+- 📱 **Responsive Design** - Works seamlessly on desktop and mobile
+- 📄 **PDF Export** - Professional reports with consistent dashboard layout
+- 🔄 **Multi-Scenario Support** - Calculate and compare different forecasts
+- ⚡ **Real-time Calculations** - Instant capacity forecasting results
+- 🎯 **Professional Alignment** - Clean calculation breakdown with proper text alignment
 
-## Quick Start
+## Built With
 
-1. **Start the application:**
-   ```bash
-   python3 -m http.server 8080
-   ```
+- **Frontend**: HTML5, CSS3, JavaScript (ES6+)
+- **PDF Generation**: jsPDF, html2canvas
+- **Testing**: Playwright
+- **AI Integration**: Google Gemini API (optional)
 
-2. **Open in browser:**
-   Navigate to `http://localhost:8080`
+## Getting Started
 
-3. **Start chatting:**
-   Type a question like: "What's my capacity for November 2025?"
+### Prerequisites
 
-## Usage Examples
+- Modern web browser (Chrome, Firefox, Safari, Edge)
+- Python 3.x (for local server)
+- Node.js (for testing, optional)
 
-### Complete Query
+### Installation
+
+Clone the repository:
+```bash
+git clone https://github.com/your-username/capacity-forecast-chatbot.git
+cd capacity-forecast-chatbot
 ```
-"What's my capacity for October 2025 with 10 staff, 2 hours average implementation time, and 80% availability?"
+
+Start the application:
+```bash
+python3 -m http.server 8080
 ```
 
-### Partial Query (Bot will prompt for missing info)
+Open your browser and navigate to:
 ```
-User: "What's my capacity for next month?"
-Bot: "How many staff members are on your team?"
-User: "15"
-Bot: "What's the average implementation time per task in hours?"
-User: "3"
-Bot: "What's your expected availability ratio? (e.g., 80% or 0.8)"
-User: "85%"
-Bot: [Displays interactive dashboard with capacity forecast]
+http://localhost:8080
 ```
+
+## Usage
+
+### Basic Conversation
+
+Start with any capacity-related question:
+
+```
+"What's my capacity for October 2025 with 25 team members?"
+```
+
+The bot will guide you through collecting:
+- **Time Window**: When you want the forecast for
+- **Staff Count**: Number of team members
+- **Average Implementation Time**: Hours per task
+- **Availability Ratio**: Percentage of productive time (e.g., 85%)
+
+### Example Workflow
+
+| Step | User Input | Bot Response |
+|------|------------|--------------|
+| 1 | "What's my capacity for next month?" | "How many staff members are on your team?" |
+| 2 | "15" | "What's the average implementation time per task?" |
+| 3 | "3 hours" | "What's your expected availability ratio?" |
+| 4 | "85%" | *Displays interactive dashboard* |
 
 ### Dashboard Features
-The result is displayed as a visual dashboard containing:
-- **Large New Implementation task count** prominently displayed
-- **Work type breakdown** showing New Implementation tasks (65%) and Update Request hours (35%)
-- **Key metrics layout**:
-  - **Top row**: Team Members, Working Days, and Availability in equal columns
-  - **Bottom row**: Available Hours in a full-width highlighted card
-- **Detailed calculation breakdown** with step-by-step math for both work types
-- **Action buttons** for resetting calculations and downloading PDF reports
-- **Responsive design** that works on all screen sizes
 
-### Action Features
-- **🔄 Calculate Another Scenario**: Reset the session to calculate a new capacity forecast
-- **📄 Download PDF Report**: Generate and download a professional PDF report with consistent layout matching the dashboard
+The result displays as a comprehensive dashboard with:
 
-#### PDF Features:
-- **High-quality output**: Vector-based PDF generation preserving exact dashboard styling
-- **Professional formatting**: Clean layout optimized for printing and sharing
-- **Consistent design**: Maintains original dashboard colors, fonts, and layout
-- **Fallback support**: Print-optimized version if PDF generation fails
-- **Auto-generated filename**: Timestamped files (e.g., `capacity-forecast-2025-09-22_14-30.pdf`)
+- **4-Column Metrics**: Team Members, Working Days, Availability, Available Hours
+- **Work Type Breakdown**: New Implementation (65%) vs Update Requests (35%)
+- **Calculation Details**: Step-by-step math with professional alignment
+- **Action Buttons**: Reset calculations and download PDF reports
 
-## Supported Time Formats
+## Available Scripts
 
-- **Specific months**: "October 2025", "Jan 2026"
-- **Relative time**: "next month", "this month"
-- **Quarters**: "Q1 2026", "Q4 2025"
+| Script | Description |
+|--------|-------------|
+| `python3 -m http.server 8080` | Start development server |
+| `npm test` | Run Playwright tests |
+| `npm run test:headed` | Run tests with visible browser |
+| `npm run test:ui` | Interactive test interface |
+| `npx playwright test tests/screenshots.spec.js` | Generate documentation screenshots |
 
-## Required Inputs
+## Testing
 
-1. **Time Window**: When you want the forecast for
-2. **Staff Count**: Number of team members
-3. **Average New Implementation Time**: Hours per new implementation task
-4. **Availability Ratio**: Percentage of time available for work (e.g., 80% accounts for meetings, breaks, etc.)
+The app includes comprehensive end-to-end testing:
+
+```bash
+# Install test dependencies
+npm install
+
+# Run all tests
+npm test
+
+# Run specific test suites
+npx playwright test tests/capacity-forecast.spec.js
+npx playwright test tests/pdf-test.spec.js
+```
+
+**Test Coverage:**
+- ✅ Cross-browser compatibility (Chromium, Firefox, WebKit)
+- ✅ Complete forecasting workflow
+- ✅ PDF generation functionality
+- ✅ Responsive design validation
+- ✅ Interactive features and calculations
 
 ## Calculation Formula
 
 The system allocates capacity between two work types:
-- **New Implementation**: 65% of available hours (calculated as task count)
-- **Update Request**: 35% of available hours (tracked as allocated hours)
 
 ```
-Available Hours = [Working days × 8 hours × Staff count] × Availability ratio
+Available Hours = [Working Days × 8 hours × Staff Count] × Availability Ratio
+
 New Implementation Hours = Available Hours × 65%
 Update Request Hours = Available Hours × 35%
 
-New Implementation Tasks = New Implementation Hours ÷ Avg New Implementation Time
-Update Request Hours = Available for flexible update work (not converted to task count)
+New Implementation Tasks = New Implementation Hours ÷ Avg Implementation Time
 ```
 
-Where working days = Monday through Friday (weekends excluded)
+Where working days exclude weekends (Monday-Friday only).
 
-## Testing
+## AI Features (Optional)
 
-Open `test.html` in your browser to run automated tests of the core functionality:
+Enable smart insights with Google Gemini API:
 
-```
-http://localhost:8080/test.html
-```
+1. **Get API Key**: Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. **Configure**: Type `set api key YOUR_API_KEY` in the chat
+3. **Ask AI Questions**: "How does this compare to industry standards?"
 
-## Files Structure
-
-- `index.html` - Main application interface
-- `style.css` - Styling and responsive design
-- `script.js` - Core chatbot logic and calculations
-- `test.html` - Automated tests
-- `README.md` - This documentation
-
-## AI-Powered Features (Optional)
-
-The chatbot includes optional AI enhancements powered by Google Gemini API:
-
-### Setting Up AI Features
-
-1. **Get a Google Gemini API Key**:
-   - Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
-   - Create a new API key for the Gemini model
-   - Keep your API key secure and never share it publicly
-
-2. **Configure the API Key**:
-   - In the chat interface, type: `set api key YOUR_API_KEY_HERE`
-   - The key is stored securely in your browser's localStorage
-   - The key never leaves your browser or gets transmitted to our servers
-
-3. **AI Features Include**:
-   - **Smart Insights**: AI-generated analysis of your capacity forecasts
-   - **Optimization Recommendations**: Intelligent suggestions for improving capacity
-   - **Advanced Query Handling**: Ask complex questions about your forecasts
-   - **Industry Benchmarking**: AI-powered comparisons with best practices
-
-### Example AI Queries
-
-```
-"How does this compare to industry standards?"
-"What are the risks with this capacity plan?"
-"Give me optimization recommendations"
-"How can I improve team efficiency?"
-```
-
-### Security & Privacy
-
-- ✅ API keys are stored locally in your browser only
-- ✅ No API keys are hardcoded or transmitted to our servers
-- ✅ All AI queries are sent directly to Google's Gemini API
-- ✅ Your forecast data is only processed for generating insights
-- ⚠️ Keep your API key private and rotate it regularly
-- ⚠️ Don't share your API key with others or include it in screenshots
-
-## Development & Testing
-
-### Testing with Playwright
-
-The app includes comprehensive end-to-end tests using Playwright:
-
-```bash
-# Run all tests
-npm test
-
-# Run tests with visible browser
-npm run test:headed
-
-# Interactive test UI
-npm run test:ui
-
-# Generate test report
-npm run test:report
-```
-
-**Test Coverage:**
-- ✅ UI functionality across Chromium, Firefox, and WebKit
-- ✅ Complete capacity forecasting workflow
-- ✅ Interactive features (toggles, follow-up questions)
-- ✅ Responsive design validation
-- ✅ Cross-browser compatibility
-
-### Screenshot Generation
-
-Screenshots for documentation are automatically generated using Playwright:
-
-```bash
-npx playwright test tests/screenshots.spec.js
-```
+**AI Capabilities:**
+- Smart capacity insights and recommendations
+- Industry benchmarking comparisons
+- Optimization suggestions
+- Risk analysis
 
 ## Browser Compatibility
 
-Works in all modern browsers (Chrome, Firefox, Safari, Edge)
+| Browser | Supported Versions |
+|---------|-------------------|
+| Chrome | 90+ |
+| Firefox | 88+ |
+| Safari | 14+ |
+| Edge | 90+ |
+
+## Project Structure
+
+```
+capacity-forecast-chatbot/
+├── index.html              # Main application
+├── style.css               # Styles and responsive design
+├── script.js               # Core chatbot logic
+├── jspdf.min.js           # PDF generation library
+├── screenshots/            # Documentation images
+├── tests/                  # Playwright test suites
+├── playwright.config.js    # Test configuration
+└── README.md              # This file
+```
+
+## Screenshots
+
+### Dashboard Report
+![Dashboard Report](screenshots/02-dashboard.png)
+
+### What-If Scenarios
+![What-If Scenarios](screenshots/03-what-if-scenarios.png)
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Credits
+
+Built with ❤️ for Operations Teams who need quick, reliable capacity forecasting.
+
+---
+
+**Need help?** Open an issue or contact the development team.

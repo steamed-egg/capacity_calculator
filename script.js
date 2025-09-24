@@ -2067,9 +2067,54 @@ class CapacityForecastBot {
         }
 
         try {
-            // Check if libraries are loaded
-            if (typeof html2canvas === 'undefined' || typeof window.jsPDF === 'undefined') {
-                throw new Error('PDF libraries not loaded');
+            // Wait for libraries to load and check with retry
+            console.log('Checking PDF libraries...');
+
+            let attempts = 0;
+            const maxAttempts = 10;
+
+            while (attempts < maxAttempts) {
+                console.log(`Attempt ${attempts + 1}: html2canvas available: ${typeof html2canvas !== 'undefined'}, jsPDF available: ${typeof window.jsPDF !== 'undefined'}`);
+
+                if (typeof html2canvas !== 'undefined' && typeof window.jsPDF !== 'undefined') {
+                    console.log('Both libraries loaded successfully');
+                    break;
+                }
+
+                attempts++;
+                if (attempts < maxAttempts) {
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+            }
+
+            if (typeof html2canvas === 'undefined') {
+                throw new Error('html2canvas library not loaded after retries');
+            }
+            // Check if jsPDF is available in any form
+            if (typeof window.jsPDF === 'undefined') {
+                console.log('window.jsPDF not found, checking alternatives...');
+                console.log('Available jsPDF-related properties:', Object.keys(window).filter(key => key.toLowerCase().includes('jspdf')));
+
+                if (window.jspdf) {
+                    console.log('Found window.jspdf, checking its structure...');
+                    console.log('typeof window.jspdf:', typeof window.jspdf);
+                    console.log('window.jspdf.jsPDF:', typeof window.jspdf.jsPDF);
+
+                    // Check if it's the jsPDF constructor or has jsPDF property
+                    if (typeof window.jspdf === 'function') {
+                        console.log('window.jspdf is a function, setting as window.jsPDF');
+                        window.jsPDF = window.jspdf;
+                    } else if (window.jspdf.jsPDF && typeof window.jspdf.jsPDF === 'function') {
+                        console.log('Found window.jspdf.jsPDF, setting as window.jsPDF');
+                        window.jsPDF = window.jspdf.jsPDF;
+                    } else {
+                        console.log('window.jspdf found but no usable constructor');
+                        window.jsPDF = null;
+                    }
+                } else {
+                    console.log('No jsPDF library found, will use print fallback');
+                    window.jsPDF = null;
+                }
             }
 
             // Show loading indicator
@@ -2078,148 +2123,78 @@ class CapacityForecastBot {
             downloadBtn.innerHTML = '⏳ Generating PDF...';
             downloadBtn.disabled = true;
 
-            // Create a container optimized for single-page PDF
-            const pdfContainer = document.createElement('div');
-            pdfContainer.style.cssText = `
-                position: fixed;
-                top: -9999px;
-                left: -9999px;
-                width: 750px;
-                background: white;
-                padding: 20px;
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                box-sizing: border-box;
-            `;
+            // Try simple approach first - use existing dashboard with inline styles
+            const pdfDocument = this.createSimplePDFFromDashboard(dashboard);
 
-            // Add compact PDF header
-            const pdfHeader = document.createElement('div');
-            pdfHeader.innerHTML = `
-                <div style="text-align: center; margin-bottom: 15px; border-bottom: 1px solid #667eea; padding-bottom: 10px;">
-                    <h1 style="color: #667eea; margin: 0; font-size: 1.4rem; font-weight: 700;">Capacity Forecast Report</h1>
-                    <p style="color: #666; margin: 5px 0 0 0; font-size: 0.8rem;">Generated on ${new Date().toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    })}</p>
-                </div>
-            `;
+            // Add to DOM temporarily
+            document.body.appendChild(pdfDocument);
 
-            // Clone and style dashboard for PDF
-            const dashboardClone = dashboard.cloneNode(true);
-
-            // Remove action buttons
-            const actionsDiv = dashboardClone.querySelector('.dashboard-actions');
-            if (actionsDiv) {
-                actionsDiv.remove();
-            }
-
-            // Apply compact PDF-specific styles
-            dashboardClone.style.cssText = `
-                background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-                border-radius: 8px;
-                padding: 1rem;
-                margin: 0;
-                box-shadow: none;
-                max-width: 100%;
-                font-size: 12px;
-            `;
-
-            // Compact styling for single-page PDF
-            const styleOverrides = document.createElement('style');
-            styleOverrides.textContent = `
-                .dashboard-header { text-align: center; margin-bottom: 0.8rem; }
-                .dashboard-title { font-size: 1.1rem; font-weight: 600; color: #2d3748; margin-bottom: 0.3rem; }
-                .time-period { font-size: 0.9rem; color: #667eea; font-weight: 500; }
-                .capacity-result { text-align: center; margin: 1rem 0; }
-                .capacity-number { font-size: 2rem; font-weight: 700; color: #667eea; margin-bottom: 0.3rem; }
-                .capacity-label { font-size: 0.9rem; color: #4a5568; font-weight: 500; }
-                .task-type-breakdown { display: flex; gap: 0.75rem; margin: 1rem 0; }
-                .task-type-card { flex: 1; background: white; border-radius: 8px; padding: 0.8rem; text-align: center; border-top: 3px solid; }
-                .task-type-card.new-impl { border-top-color: #667eea; background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); }
-                .task-type-card.update-req { border-top-color: #48bb78; background: linear-gradient(135deg, #48bb7815 0%, #38a16915 100%); }
-                .task-type-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
-                .task-type-title { font-size: 0.8rem; font-weight: 600; color: #2d3748; }
-                .task-type-percentage { font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 15px; background: rgba(102, 126, 234, 0.1); color: #667eea; }
-                .update-req .task-type-percentage { background: rgba(72, 187, 120, 0.1); color: #48bb78; }
-                .task-type-capacity { font-size: 1.6rem; font-weight: 700; color: #2d3748; margin-bottom: 0.2rem; }
-                .task-type-subtitle { font-size: 0.7rem; color: #718096; font-weight: 500; }
-                .dashboard-metrics { margin: 1rem 0; }
-                .metrics-row-top { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem; }
-                .metrics-row-bottom { display: flex; justify-content: center; }
-                .metric-card { background: white; border-radius: 6px; padding: 0.6rem; text-align: center; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08); }
-                .metric-card-full { width: 100%; max-width: 250px; }
-                .metric-value { font-size: 1.2rem; font-weight: 600; color: #2d3748; margin-bottom: 0.2rem; }
-                .metric-label { font-size: 0.7rem; color: #718096; font-weight: 500; }
-                .calculation-breakdown { background: white; border-radius: 6px; padding: 0.8rem; margin-top: 0.8rem; border-left: 3px solid #667eea; }
-                .calculation-title { font-size: 0.85rem; font-weight: 600; color: #2d3748; margin-bottom: 0.5rem; }
-                .calculation-step { display: flex; justify-content: space-between; align-items: flex-start; padding: 0.3rem 0; border-bottom: 1px solid #e2e8f0; font-size: 0.75rem; line-height: 1.2; }
-                .calculation-step:last-child { border-bottom: none; font-weight: 600; color: #667eea; }
-                .calculation-formula { background: #f7fafc; border-radius: 4px; padding: 0.5rem; margin-top: 0.5rem; font-family: 'Monaco', 'Consolas', monospace; font-size: 0.7rem; color: #4a5568; text-align: center; }
-            `;
-
-            pdfContainer.appendChild(styleOverrides);
-            pdfContainer.appendChild(pdfHeader);
-            pdfContainer.appendChild(dashboardClone);
-            document.body.appendChild(pdfContainer);
-
-            // Generate PDF with optimized dimensions
-            const canvas = await html2canvas(pdfContainer, {
-                scale: 1.5,
+            // Generate PDF
+            const canvas = await html2canvas(pdfDocument, {
+                scale: 2,
                 useCORS: true,
                 allowTaint: true,
                 backgroundColor: '#ffffff',
-                width: 750,
-                height: Math.min(pdfContainer.scrollHeight, 1000),
-                scrollX: 0,
-                scrollY: 0
+                width: 800,
+                height: pdfDocument.scrollHeight
             });
 
-            const { jsPDF } = window;
-            const pdf = new jsPDF('p', 'mm', 'a4');
+            // Create PDF
+            if (!window.jsPDF) {
+                console.log('jsPDF not available, falling back to print dialog');
+                document.body.removeChild(pdfDocument);
+                downloadBtn.innerHTML = originalText;
+                downloadBtn.disabled = false;
+                window.print();
+                return;
+            }
+
+            const pdf = new window.jsPDF('p', 'mm', 'a4');
 
             const imgData = canvas.toDataURL('image/png');
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const pdfHeight = pdf.internal.pageSize.getHeight();
-            const imgWidth = canvas.width;
-            const imgHeight = canvas.height;
 
-            // Calculate dimensions to fit content on single page with margins
-            const maxWidth = pdfWidth - 20; // 10mm margins on each side
-            const maxHeight = pdfHeight - 20; // 10mm margins top and bottom
+            // Calculate scaling to fit page with margins
+            const margin = 10;
+            const availableWidth = pdfWidth - (margin * 2);
+            const availableHeight = pdfHeight - (margin * 2);
 
-            // Convert pixels to mm (1 px ≈ 0.264583 mm at 96 DPI)
-            const imgWidthMM = imgWidth * 0.264583;
-            const imgHeightMM = imgHeight * 0.264583;
+            const imgAspectRatio = canvas.width / canvas.height;
+            const pageAspectRatio = availableWidth / availableHeight;
 
-            // Scale to fit within page bounds
-            const widthRatio = maxWidth / imgWidthMM;
-            const heightRatio = maxHeight / imgHeightMM;
-            const ratio = Math.min(widthRatio, heightRatio, 1); // Don't scale up
+            let renderWidth, renderHeight;
 
-            const scaledWidth = imgWidthMM * ratio;
-            const scaledHeight = imgHeightMM * ratio;
-            const x = (pdfWidth - scaledWidth) / 2;
-            const y = (pdfHeight - scaledHeight) / 2;
+            if (imgAspectRatio > pageAspectRatio) {
+                renderWidth = availableWidth;
+                renderHeight = availableWidth / imgAspectRatio;
+            } else {
+                renderHeight = availableHeight;
+                renderWidth = availableHeight * imgAspectRatio;
+            }
 
-            pdf.addImage(imgData, 'PNG', x, y, scaledWidth, scaledHeight);
+            const x = (pdfWidth - renderWidth) / 2;
+            const y = margin;
 
-            // Generate filename
+            pdf.addImage(imgData, 'PNG', x, y, renderWidth, renderHeight);
+
+            // Save PDF
             const timestamp = new Date().toISOString().slice(0, 16).replace('T', '_').replace(':', '-');
-            const filename = `capacity-forecast-${timestamp}.pdf`;
+            pdf.save(`capacity-forecast-${timestamp}.pdf`);
 
-            pdf.save(filename);
-
-            // Restore button
+            // Clean up
+            document.body.removeChild(pdfDocument);
             downloadBtn.innerHTML = originalText;
             downloadBtn.disabled = false;
 
-            // Clean up
-            document.body.removeChild(pdfContainer);
-
         } catch (error) {
-            console.error('PDF generation error:', error);
+            console.error('PDF generation failed:', error);
+
+            // Clean up any temporary elements
+            const tempDoc = document.querySelector('div[style*="position: fixed"][style*="-9999px"]');
+            if (tempDoc) {
+                document.body.removeChild(tempDoc);
+            }
 
             // Restore button
             const downloadBtn = document.querySelector('.download-button');
@@ -2228,9 +2203,282 @@ class CapacityForecastBot {
                 downloadBtn.disabled = false;
             }
 
-            // Enhanced fallback with proper styling
+            // Show print fallback instead of just alert
             this.showPrintFallback(dashboard);
         }
+    }
+
+    createPDFDocument(originalDashboard) {
+        try {
+            console.log('Creating PDF document...');
+
+            // Create container
+            const container = document.createElement('div');
+            container.style.cssText = `
+                position: fixed;
+                top: -9999px;
+                left: 0;
+                width: 800px;
+                background: white;
+                padding: 20px;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                box-sizing: border-box;
+            `;
+
+        // Add header
+        container.innerHTML = `
+            <div style="text-align: center; margin-bottom: 20px; border-bottom: 2px solid #667eea; padding-bottom: 15px;">
+                <h1 style="color: #667eea; margin: 0; font-size: 1.8rem; font-weight: 700;">Capacity Forecast Report</h1>
+                <p style="color: #666; margin: 8px 0 0 0; font-size: 1rem;">Generated on ${new Date().toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })}</p>
+            </div>
+        `;
+
+        // Get dashboard data from original
+        const dashboardTitle = originalDashboard.querySelector('.dashboard-title')?.textContent || 'Capacity Forecast';
+        const timePeriod = originalDashboard.querySelector('.time-period')?.textContent || '';
+        const capacityNumber = originalDashboard.querySelector('.capacity-number')?.textContent || '0';
+
+        // Extract metrics data
+        const metricCards = originalDashboard.querySelectorAll('.metric-card');
+        const metricsData = Array.from(metricCards).map(card => ({
+            value: card.querySelector('.metric-value')?.textContent || '0',
+            label: card.querySelector('.metric-label')?.textContent || ''
+        }));
+
+        // Extract task type data
+        const newImplCard = originalDashboard.querySelector('.task-type-card.new-impl');
+        const updateReqCard = originalDashboard.querySelector('.task-type-card.update-req');
+
+        const newImplData = {
+            capacity: newImplCard?.querySelector('.task-type-capacity')?.textContent || '0',
+            percentage: newImplCard?.querySelector('.task-type-percentage')?.textContent || '65%',
+            subtitle: newImplCard?.querySelector('.task-type-subtitle')?.textContent || ''
+        };
+
+        const updateReqData = {
+            capacity: updateReqCard?.querySelector('.task-type-capacity')?.textContent || '0',
+            percentage: updateReqCard?.querySelector('.task-type-percentage')?.textContent || '35%',
+            subtitle: updateReqCard?.querySelector('.task-type-subtitle')?.textContent || ''
+        };
+
+        // Extract calculation steps
+        const calculationSteps = originalDashboard.querySelectorAll('.calculation-step');
+        const stepsData = Array.from(calculationSteps).map(step => ({
+            description: step.querySelector('span:first-child')?.textContent || '',
+            calculation: step.querySelector('span:last-child')?.textContent || ''
+        }));
+
+        // Build dashboard HTML with exact same structure
+        const dashboardHTML = `
+            <div style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 12px; padding: 24px; margin: 0;">
+
+                <!-- Dashboard Header -->
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="font-size: 1.4rem; font-weight: 600; color: #2d3748; margin-bottom: 8px;">${dashboardTitle}</div>
+                    <div style="font-size: 1.1rem; color: #667eea; font-weight: 500;">${timePeriod}</div>
+                </div>
+
+                <!-- Main Capacity Result -->
+                <div style="text-align: center; margin: 24px 0;">
+                    <div style="font-size: 3rem; font-weight: 700; color: #667eea; margin-bottom: 8px;">${capacityNumber}</div>
+                    <div style="font-size: 1.1rem; color: #4a5568; font-weight: 500;">New Implementation Tasks</div>
+                </div>
+
+                <!-- Task Type Breakdown -->
+                <div style="display: flex; gap: 16px; margin: 24px 0;">
+                    <div style="flex: 1; background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); border-radius: 12px; padding: 20px; text-align: center; border-top: 4px solid #667eea;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <div style="font-size: 1rem; font-weight: 600; color: #2d3748;">New Implementation</div>
+                            <div style="font-size: 0.9rem; font-weight: 600; padding: 4px 12px; border-radius: 20px; background: rgba(102, 126, 234, 0.1); color: #667eea;">${newImplData.percentage}</div>
+                        </div>
+                        <div style="font-size: 2.5rem; font-weight: 700; color: #2d3748; margin-bottom: 4px;">${newImplData.capacity}</div>
+                        <div style="font-size: 0.9rem; color: #718096; font-weight: 500;">${newImplData.subtitle}</div>
+                    </div>
+                    <div style="flex: 1; background: linear-gradient(135deg, #48bb7815 0%, #38a16915 100%); border-radius: 12px; padding: 20px; text-align: center; border-top: 4px solid #48bb78;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <div style="font-size: 1rem; font-weight: 600; color: #2d3748;">Update Request</div>
+                            <div style="font-size: 0.9rem; font-weight: 600; padding: 4px 12px; border-radius: 20px; background: rgba(72, 187, 120, 0.1); color: #48bb78;">${updateReqData.percentage}</div>
+                        </div>
+                        <div style="font-size: 2.5rem; font-weight: 700; color: #2d3748; margin-bottom: 4px;">${updateReqData.capacity}</div>
+                        <div style="font-size: 0.9rem; color: #718096; font-weight: 500;">${updateReqData.subtitle}</div>
+                    </div>
+                </div>
+
+                <!-- 4-Column Metrics -->
+                <div style="margin: 24px 0;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px;">
+                        ${metricsData.map(metric => `
+                            <div style="background: white; border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); position: relative; overflow: hidden;">
+                                <div style="position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+                                <div style="font-size: 1.8rem; font-weight: 600; color: #2d3748; margin-bottom: 4px;">${metric.value}</div>
+                                <div style="font-size: 0.9rem; color: #718096; font-weight: 500;">${metric.label}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <!-- Calculation Breakdown -->
+                <div style="background: white; border-radius: 12px; padding: 20px; margin-top: 20px; border-left: 4px solid #667eea;">
+                    <div style="font-size: 1.1rem; font-weight: 600; color: #2d3748; margin-bottom: 16px;">📊 Calculation Breakdown</div>
+                    ${stepsData.map(step => `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #e2e8f0; font-size: 0.95rem; line-height: 1.4;">
+                            <span style="color: #4a5568;">${step.description}</span>
+                            <span style="color: #2d3748; font-weight: 500;">${step.calculation}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+
+            container.innerHTML += dashboardHTML;
+            console.log('PDF document created successfully');
+            return container;
+
+        } catch (error) {
+            console.error('Error creating PDF document:', error);
+            // Return a simple fallback version
+            return this.createSimplePDFDocument(originalDashboard);
+        }
+    }
+
+    createSimplePDFDocument(originalDashboard) {
+        const container = document.createElement('div');
+        container.style.cssText = `
+            position: fixed;
+            top: -9999px;
+            left: 0;
+            width: 800px;
+            background: white;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            box-sizing: border-box;
+        `;
+
+        const dashboardTitle = originalDashboard.querySelector('.dashboard-title')?.textContent || 'Capacity Forecast';
+        const timePeriod = originalDashboard.querySelector('.time-period')?.textContent || '';
+        const capacityNumber = originalDashboard.querySelector('.capacity-number')?.textContent || '0';
+
+        container.innerHTML = `
+            <div style="text-align: center; margin-bottom: 20px; border-bottom: 2px solid #667eea; padding-bottom: 15px;">
+                <h1 style="color: #667eea; margin: 0; font-size: 1.8rem;">Capacity Forecast Report</h1>
+                <p style="color: #666; margin: 8px 0 0 0;">${new Date().toLocaleDateString()}</p>
+            </div>
+            <div style="background: #f5f7fa; border-radius: 12px; padding: 24px;">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <h2 style="color: #2d3748; margin-bottom: 8px;">${dashboardTitle}</h2>
+                    <p style="color: #667eea;">${timePeriod}</p>
+                </div>
+                <div style="text-align: center; margin: 24px 0;">
+                    <div style="font-size: 3rem; font-weight: bold; color: #667eea;">${capacityNumber}</div>
+                    <div style="color: #4a5568;">New Implementation Tasks</div>
+                </div>
+            </div>
+        `;
+
+        return container;
+    }
+
+    createSimplePDFFromDashboard(originalDashboard) {
+        console.log('Creating simple PDF from existing dashboard...');
+
+        // Create container
+        const container = document.createElement('div');
+        container.style.cssText = `
+            position: fixed;
+            top: -9999px;
+            left: 0;
+            width: 800px;
+            background: white;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            box-sizing: border-box;
+        `;
+
+        // Add simple header
+        container.innerHTML = `
+            <div style="text-align: center; margin-bottom: 20px; border-bottom: 2px solid #667eea; padding-bottom: 15px;">
+                <h1 style="color: #667eea; margin: 0; font-size: 1.8rem; font-weight: 700;">Capacity Forecast Report</h1>
+                <p style="color: #666; margin: 8px 0 0 0; font-size: 1rem;">Generated on ${new Date().toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })}</p>
+            </div>
+        `;
+
+        // Clone the dashboard and apply inline styles
+        const dashboardClone = originalDashboard.cloneNode(true);
+
+        // Remove action buttons
+        const actionsDiv = dashboardClone.querySelector('.dashboard-actions');
+        if (actionsDiv) {
+            actionsDiv.remove();
+        }
+
+        // Remove toggle button
+        const toggleButton = dashboardClone.querySelector('.calculation-toggle');
+        if (toggleButton) {
+            toggleButton.remove();
+        }
+
+        // Apply styles directly to elements
+        dashboardClone.style.cssText = `
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 0;
+            box-shadow: none;
+        `;
+
+        // Force metrics to 4-column layout
+        const metricsRowTop = dashboardClone.querySelector('.metrics-row-top');
+        if (metricsRowTop) {
+            metricsRowTop.style.cssText = `
+                display: grid !important;
+                grid-template-columns: 1fr 1fr 1fr 1fr !important;
+                gap: 12px !important;
+                margin-bottom: 16px !important;
+            `;
+            console.log('Applied 4-column grid to metrics');
+        }
+
+        // Force calculation steps to 2-column layout
+        const calculationSteps = dashboardClone.querySelectorAll('.calculation-step');
+        calculationSteps.forEach(step => {
+            step.style.cssText = `
+                display: flex !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+                padding: 8px 0 !important;
+                border-bottom: 1px solid #e2e8f0 !important;
+                font-size: 0.95rem !important;
+            `;
+        });
+        console.log(`Applied 2-column layout to ${calculationSteps.length} calculation steps`);
+
+        // Style metric cards
+        const metricCards = dashboardClone.querySelectorAll('.metric-card');
+        metricCards.forEach(card => {
+            card.style.cssText = `
+                background: white !important;
+                border-radius: 12px !important;
+                padding: 16px !important;
+                text-align: center !important;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
+                position: relative !important;
+            `;
+        });
+
+        container.appendChild(dashboardClone);
+        return container;
     }
 
     showPrintFallback(dashboard) {

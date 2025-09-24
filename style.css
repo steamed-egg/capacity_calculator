@@ -456,25 +456,48 @@ header p {
 }
 
 .metrics-row-top {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
-    margin-bottom: 1rem;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr 1fr 1fr !important;
+    gap: 1rem !important;
+    margin-bottom: 1rem !important;
+    width: 100% !important;
 }
 
-/* Enhanced metrics layout for larger screens */
+/* Override ALL responsive rules - force 4 columns everywhere */
 @media (min-width: 769px) {
     .metrics-row-top {
-        grid-template-columns: repeat(4, 1fr);
-        gap: 1.5rem;
+        grid-template-columns: 1fr 1fr 1fr 1fr !important;
+        gap: 1.5rem !important;
     }
 }
 
 @media (min-width: 1024px) {
     .metrics-row-top {
-        grid-template-columns: repeat(4, 1fr);
-        gap: 2rem;
+        grid-template-columns: 1fr 1fr 1fr 1fr !important;
+        gap: 2rem !important;
     }
+}
+
+@media (max-width: 768px) {
+    .metrics-row-top {
+        grid-template-columns: 1fr 1fr 1fr 1fr !important;
+        gap: 0.75rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .metrics-row-top {
+        grid-template-columns: 1fr 1fr 1fr 1fr !important;
+        gap: 0.5rem !important;
+    }
+}
+
+/* Nuclear option - force the layout with the most specific selector possible */
+.capacity-dashboard .dashboard-metrics .metrics-row-top {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr 1fr 1fr !important;
+    grid-template-rows: auto !important;
+    gap: 1rem !important;
 }
 
 .metrics-row-bottom {
@@ -625,6 +648,17 @@ header p {
     font-size: 0.9rem;
 }
 
+.calculation-step span:first-child {
+    text-align: left;
+    flex: 1;
+}
+
+.calculation-step span:last-child {
+    text-align: right;
+    flex: 1;
+    font-weight: 500;
+}
+
 /* Desktop calculation breakdown improvements */
 @media (min-width: 769px) {
     .calculation-breakdown {
@@ -763,6 +797,7 @@ header p {
     }
 }
 
+@media (max-width: 768px) {
     .capacity-number {
         font-size: 2.5rem;
     }
@@ -786,6 +821,22 @@ header p {
         width: 100%;
         max-width: 300px;
     }
+}
+
+/* Keep 2-column button layout on larger screens */
+@media (min-width: 769px) {
+    .dashboard-actions {
+        flex-direction: row;
+        justify-content: center;
+        gap: 1.5rem;
+    }
+
+    .action-button {
+        width: auto;
+        max-width: none;
+        flex: 0 0 auto;
+    }
+}
 
     .scenarios-container {
         margin: 1rem 0;
