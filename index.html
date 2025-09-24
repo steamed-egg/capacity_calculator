@@ -31,7 +31,16 @@
 
     <!-- PDF Generation Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="jspdf.min.js"></script>
+    <script>
+        // Verify libraries loaded
+        window.addEventListener('load', () => {
+            console.log('Window loaded. Checking PDF libraries:');
+            console.log('html2canvas:', typeof html2canvas !== 'undefined');
+            console.log('jsPDF:', typeof window.jsPDF !== 'undefined');
+            console.log('window.jsPDF object:', window.jsPDF);
+        });
+    </script>
 
     <!-- Environment Variable Loader -->
     <script src="env-loader.js"></script>
